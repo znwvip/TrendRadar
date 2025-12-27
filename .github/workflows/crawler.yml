@@ -130,6 +130,22 @@ jobs:
           cp "$src" docs/report.html
           echo "Copied to docs/report.html"
 
+      - name: Archive snapshot to docs/history
+        if: success()
+        run: |
+          set -e
+          latest_dir=$(ls -d output/20*-*-* 2>/dev/null | sort | tail -n 1)
+          echo "Latest dir: $latest_dir"
+
+          # 归档目录：docs/history/YYYY-MM-DD/html/
+          archive_dir="docs/history/$(basename "$latest_dir")/html"
+          mkdir -p "$archive_dir"
+
+          # 归档当次快照：output/YYYY-MM-DD/html/*.html（包含 10-15.html、当前榜单汇总.html 等）
+          cp -f "$latest_dir"/html/*.html "$archive_dir"/
+
+          echo "Archived html snapshots to $archive_dir"
+
       - name: Inject theme into docs/report.html
         if: success()
         run: |
