@@ -162,23 +162,30 @@ jobs:
           GITHUB_ACTIONS: true
         run: python -m trendradar
       - name: Update docs/index.html from latest report
+
         if: success()
         run: |
           set -e
-
-          # 找到最新日期目录，例如 output/2025-12-26
           latest_dir=$(ls -d output/20*-*-* 2>/dev/null | sort | tail -n 1)
           echo "Latest dir: $latest_dir"
-
-          # 你的日志显示 current 模式生成的是这个文件名
           src="$latest_dir/html/当前榜单汇总.html"
-
-          # 如果你后面改成 daily 模式，这里可换成对应文件名
           test -f "$src"
 
           mkdir -p docs
           cp "$src" docs/index.html
-          echo "Updated docs/index.html"
+
+          # 在 </head> 前注入紧凑样式
+          sed -i 's#</head>#<style>\n\
+          .news-item{margin:6px 0!important;padding:8px 10px!important;gap:10px!important;}\n\
+          .news-number{width:28px!important;height:28px!important;line-height:28px!important;font-size:12px!important;flex:0 0 28px!important;}\n\
+          .news-header{margin-bottom:4px!important;line-height:1.2!important;gap:6px!important;}\n\
+          .source-name,.rank-num,.time-info{font-size:12px!important;}\n\
+          .news-title{line-height:1.25!important;}\n\
+          .news-link{line-height:1.25!important;font-size:14px!important;}\n\
+          .container,.news-list{padding-top:10px!important;padding-bottom:10px!important;}\n\
+          </style>\n</head>#' docs/index.html
+
+          echo "Updated docs/index.html with compact CSS"
 
       - name: Commit and push docs
         if: success()
