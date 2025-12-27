@@ -3,37 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TrendRadar 发布页</title>
+  <title>TrendRadar</title>
 
   <style>
-    /* 配色：参考 GitHub Dark / modern UI，耐看不刺眼 */
     :root{
-      --bg: #0d1117;          /* 页面背景 */
-      --fg: #e6edf3;          /* 主文字 */
-      --muted:#9da7b3;        /* 次文字 */
-      --card:#0f172a;         /* 卡片背景 */
-      --border:#223042;       /* 边框 */
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --bg:#0d1117;
+      --fg:#e6edf3;
+      --muted:#9da7b3;
+      --border:#223042;
 
-      --btn:#1f6feb;          /* 主按钮蓝 */
-      --btnfg:#ffffff;
+      --btn:#1f6feb;
+      --btnfg:#fff;
 
-      --chip:#111827;         /* 小标签底色 */
+      --chip:#111827;
       --chipfg:#cbd5e1;
-
-      --radius: 14px;
     }
-
     html[data-theme="light"]{
-      --bg: #f6f8fa;
-      --fg: #0f172a;
+      --bg:#f6f8fa;
+      --fg:#0f172a;
       --muted:#667085;
-      --card:#ffffff;
       --border:#e5e7eb;
-      --shadow: 0 10px 30px rgba(15,23,42,.10);
 
       --btn:#2563eb;
-      --btnfg:#ffffff;
+      --btnfg:#fff;
 
       --chip:#f3f4f6;
       --chipfg:#334155;
@@ -44,106 +36,89 @@
       margin:0;
       background:var(--bg);
       color:var(--fg);
-      font:14px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
-            "PingFang SC","Microsoft YaHei",sans-serif;
+      font:14px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
     }
 
     header{
       position:sticky;
       top:0;
-      z-index:20;
-      background: color-mix(in srgb, var(--bg) 86%, transparent);
-      backdrop-filter: blur(10px) saturate(180%);
+      z-index:50;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px) saturate(160%);
       border-bottom:1px solid var(--border);
     }
-
     .bar{
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 10px 14px;
+      height:56px;
+      padding:0 12px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 12px;
+      gap:12px;
+      max-width: 1400px;
+      margin:0 auto;
     }
-
-    .left{
+    .title{
       display:flex;
       flex-direction:column;
       gap:2px;
-      min-width: 0;
+      min-width:0;
     }
-    .left .title{
-      font-weight: 700;
-      letter-spacing: .2px;
-      white-space: nowrap;
+    .title strong{
+      font-size:14px;
+      white-space:nowrap;
       overflow:hidden;
-      text-overflow: ellipsis;
+      text-overflow:ellipsis;
     }
-    .left .sub{
-      color:var(--muted);
+    .title span{
       font-size:12px;
-      white-space: nowrap;
+      color:var(--muted);
+      white-space:nowrap;
       overflow:hidden;
-      text-overflow: ellipsis;
+      text-overflow:ellipsis;
     }
 
-    .right{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-shrink:0;
-    }
-
+    .right{ display:flex; align-items:center; gap:10px; }
     .chip{
       font-size:12px;
       color:var(--chipfg);
       background:var(--chip);
       border:1px solid var(--border);
       padding:6px 10px;
-      border-radius: 999px;
+      border-radius:999px;
     }
-
     .btn{
       border:1px solid var(--border);
-      background:var(--card);
+      background:transparent;
       color:var(--fg);
       padding:8px 10px;
-      border-radius: 12px;
+      border-radius:10px;
       cursor:pointer;
-      transition: transform .05s ease, filter .15s ease;
     }
-    .btn:active{ transform: translateY(1px); }
     .btn.primary{
       background:var(--btn);
+      border-color:transparent;
       color:var(--btnfg);
-      border-color: transparent;
     }
 
-    main{
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 12px 14px 18px;
-    }
-
+    /* 关键：报告页全屏贴边，不做卡片裁切 */
     .frame{
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      background:var(--card);
-      box-shadow: var(--shadow);
+      width:100%;
+      height: calc(100vh - 56px);
+      border:0;
+      border-radius:0;
       overflow:hidden;
-      height: calc(100vh - 76px);
+      background:transparent;
     }
     iframe{
       width:100%;
       height:100%;
       border:0;
-      background: transparent;
+      background:transparent;
     }
 
-    @media (max-width: 480px){
+    @media (max-width: 520px){
       .chip{ display:none; }
-      .frame{ height: calc(100vh - 70px); }
+      .title span{ display:none; }
     }
   </style>
 </head>
@@ -151,25 +126,22 @@
 <body>
   <header>
     <div class="bar">
-      <div class="left">
-        <div class="title">TrendRadar 发布页</div>
-        <div class="sub">网页是静态展示；抓取更新靠 GitHub Actions 定时运行</div>
+      <div class="title">
+        <strong>TrendRadar</strong>
+        <span>打开网页不会触发抓取；更新由 GitHub Actions 定时生成</span>
       </div>
-
       <div class="right">
         <span class="chip" id="status">报告：加载中…</span>
-        <button class="btn" id="toggle">浅色模式</button>
-        <button class="btn primary" id="refresh">刷新报告</button>
+        <button class="btn" id="toggle">浅色</button>
+        <button class="btn primary" id="refresh">刷新</button>
       </div>
     </div>
   </header>
 
-  <main>
-    <!-- TrendRadar 自动更新的报告页：docs/index.html -->
-    <div class="frame">
-      <iframe id="report" src="./index.html" title="TrendRadar Report"></iframe>
-    </div>
-  </main>
+  <div class="frame">
+    <!-- 报告页：如果你未来改成 report.html，这里改成 ./report.html -->
+    <iframe id="report" src="./index.html" title="TrendRadar Report"></iframe>
+  </div>
 
   <script>
     const root = document.documentElement;
@@ -181,10 +153,8 @@
     function applyTheme(theme){
       root.dataset.theme = theme;
       localStorage.setItem('theme', theme);
-      toggleBtn.textContent = theme === 'dark' ? '浅色模式' : '深色模式';
+      toggleBtn.textContent = theme === 'dark' ? '浅色' : '深色';
     }
-
-    // 默认深色；如果用户切过，就按用户选择
     applyTheme(localStorage.getItem('theme') || 'dark');
 
     toggleBtn.addEventListener('click', () => {
@@ -193,7 +163,7 @@
 
     refreshBtn.addEventListener('click', () => {
       status.textContent = '报告：刷新中…';
-      frame.src = './index.html?ts=' + Date.now(); // 强制跳过缓存
+      frame.src = './index.html?ts=' + Date.now();
     });
 
     frame.addEventListener('load', () => {
