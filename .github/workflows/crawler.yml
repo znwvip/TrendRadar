@@ -5,38 +5,7 @@ on:
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     # ⚠️ 试用版说明 / Trial Mode
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    #
-    # 🔄 运行机制 / How it works:
-    #    - 每个周期为 7 天，届时自动停止
-    #    - 运行 "Check In" 会重置周期（重新开始 7 天倒计时，而非累加）
-    #    - Each cycle is 7 days, then auto-stops
-    #    - "Check In" resets the cycle (restarts 7-day countdown, not cumulative)
-    #
-    # 💡 设计初衷 / Why this design:
-    #    如果 7 天都忘了签到，或许这些资讯对你来说并非刚需
-    #    适时的暂停，能帮你从信息流中抽离，给大脑留出喘息的空间
-    #    If you forget for 7 days, maybe you don't really need it
-    #    A timely pause helps you detach from the stream and gives your mind space
-    #
-    # 🙏 珍惜资源 / Respect shared resources:
-    #    GitHub Actions 是平台提供的公共资源，每次运行都会消耗算力
-    #    签到机制确保资源分配给真正需要的用户，感谢你的理解与配合
-    #    GitHub Actions is a shared public resource provided by the platform
-    #    Check-in ensures resources go to those who truly need it — thank you
-    #
-    # 🚀 长期使用请部署 Docker 版本 / For long-term use, deploy Docker version
-    #
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    #
-    # 📝 修改运行时间：只改第一个数字（0-59），表示每小时第几分钟运行
-    # 📝 Change time: Only modify the first number (0-59) = minute of each hour
-    #
-    # 示例 / Examples:
-    #   "15 * * * *"     → 每小时第15分钟 / minute 15 every hour
-    #   "30 0-14 * * *"  → 北京时间 8:00-22:00 每小时第30分钟 / Beijing 8am-10pm
-    #
     - cron: "33 * * * *"
-
   workflow_dispatch:
 
 concurrency:
@@ -50,7 +19,7 @@ permissions:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -93,23 +62,10 @@ jobs:
             fi
           fi
 
-
-      # --------------------------------------------------------------------------------
-      # 🚦 TRAFFIC CONTROL / 流量控制
-      # --------------------------------------------------------------------------------
-      # EN: Generates a random delay between 1 and 300 seconds (5 minutes).
-      #     Critical for load balancing.
-      #
-      # CN: 生成 1 到 300 秒（5分钟）之间的随机延迟。
-      #     这对负载均衡至关重要。
+      # 关掉随机延迟（你现在是自用网页，不需要流量打散）
       - name: Random Delay (Traffic Control)
-        if: success()
-        run: |
-          echo "🎲 Traffic Control: Generating random delay..."
-          DELAY=$(( ( RANDOM % 300 )  + 1 ))
-          echo "⏸️  Sleeping for ${DELAY} seconds to spread the load..."
-          sleep ${DELAY}s
-          echo "▶️  Delay finished. Starting crawler..."
+        if: false
+        run: echo "skip"
 
       - name: Set up Python
         if: success()
@@ -161,8 +117,8 @@ jobs:
           S3_REGION: ${{ secrets.S3_REGION }}
           GITHUB_ACTIONS: true
         run: python -m trendradar
-        
-      - name: Update docs/report.html from latest report
+
+      - name: Copy latest report to docs/report.html
         if: success()
         run: |
           set -e
@@ -172,6 +128,7 @@ jobs:
           test -f "$src"
           mkdir -p docs
           cp "$src" docs/report.html
+          echo "Copied to docs/report.html"
 
       - name: Inject theme into docs/report.html
         if: success()
@@ -184,8 +141,10 @@ jobs:
           html[data-theme="dark"]{--tr-bg:#0b1020;--tr-fg:#e6edf3;--tr-muted:#9aa4b2;--tr-border:#20304a;--tr-card:#0f172a;--tr-link:#7aa7ff;}\n\
           html[data-theme="light"]{--tr-bg:#f6f8fa;--tr-fg:#0f172a;--tr-muted:#667085;--tr-border:#e5e7eb;--tr-card:#ffffff;--tr-link:#2563eb;}\n\
           html,body{background:var(--tr-bg)!important;color:var(--tr-fg)!important;}\n\
-          .news-item{background:var(--tr-card)!important;border:1px solid var(--tr-border)!important;}\n\
+          .container,.wrapper,.content,.main,.page{background:transparent!important;color:var(--tr-fg)!important;}\n\
+          .news-item{background:var(--tr-card)!important;border:1px solid var(--tr-border)!important;border-radius:12px!important;}\n\
           .news-header,.source-name,.rank-num,.time-info{color:var(--tr-muted)!important;}\n\
+          .news-title{color:var(--tr-fg)!important;}\n\
           a,.news-link{color:var(--tr-link)!important;}\n\
           hr{border-color:var(--tr-border)!important;}\n\
           </style>\n\
@@ -198,33 +157,9 @@ jobs:
             window.addEventListener(\"storage\", function(ev){ if(ev && ev.key===\"theme\") apply(ev.newValue); });\n\
           })();\n\
           </script>\n\
-          </head>#' docs/report.html || true
-        
-      - name: Update docs/index.html from latest report
+          </head>#' docs/report.html
 
-        if: success()
-        run: |
-          set -e
-          latest_dir=$(ls -d output/20*-*-* 2>/dev/null | sort | tail -n 1)
-          echo "Latest dir: $latest_dir"
-          src="$latest_dir/html/当前榜单汇总.html"
-          test -f "$src"
-
-          mkdir -p docs
-          cp "$src" docs/index.html
-
-          # 在 </head> 前注入紧凑样式
-          sed -i 's#</head>#<style>\n\
-          .news-item{margin:6px 0!important;padding:8px 10px!important;gap:10px!important;}\n\
-          .news-number{width:28px!important;height:28px!important;line-height:28px!important;font-size:12px!important;flex:0 0 28px!important;}\n\
-          .news-header{margin-bottom:4px!important;line-height:1.2!important;gap:6px!important;}\n\
-          .source-name,.rank-num,.time-info{font-size:12px!important;}\n\
-          .news-title{line-height:1.25!important;}\n\
-          .news-link{line-height:1.25!important;font-size:14px!important;}\n\
-          .container,.news-list{padding-top:10px!important;padding-bottom:10px!important;}\n\
-          </style>\n</head>#' docs/index.html
-
-          echo "Updated docs/index.html with compact CSS"
+          echo "Injected theme-bridge into docs/report.html"
 
       - name: Commit and push docs
         if: success()
@@ -232,6 +167,7 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/index.html docs/report.html
-          git commit -m "Update TrendRadar page" || echo "No changes to commit"
+          # 提交 report.html（index.html 是你的外壳页，通常不变；加上也不影响）
+          git add docs/report.html docs/index.html
+          git commit -m "Update TrendRadar pages" || echo "No changes to commit"
           git push
