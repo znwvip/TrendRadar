@@ -428,59 +428,6 @@
                 }
             }
         </style>
-<style id="theme-bridge">
-  :root { color-scheme: light dark; }
-
-  html[data-theme="dark"]{
-    --tr-bg:#0b1020;
-    --tr-fg:#e6edf3;
-    --tr-muted:#9aa4b2;
-    --tr-border:#20304a;
-    --tr-card:#0f172a;
-    --tr-link:#7aa7ff;
-  }
-  html[data-theme="light"]{
-    --tr-bg:#f6f8fa;
-    --tr-fg:#0f172a;
-    --tr-muted:#667085;
-    --tr-border:#e5e7eb;
-    --tr-card:#ffffff;
-    --tr-link:#2563eb;
-  }
-
-  html, body { background: var(--tr-bg) !important; color: var(--tr-fg) !important; }
-  .container, .wrapper, .content, .main, .page { background: transparent !important; color: var(--tr-fg) !important; }
-
-  .news-item{
-    background: var(--tr-card) !important;
-    border: 1px solid var(--tr-border) !important;
-    border-radius: 12px !important;
-  }
-
-  .news-header, .source-name, .rank-num, .time-info { color: var(--tr-muted) !important; }
-  .news-title { color: var(--tr-fg) !important; }
-  a, .news-link { color: var(--tr-link) !important; }
-  hr { border-color: var(--tr-border) !important; }
-</style>
-
-<script id="theme-bridge-js">
-  (function(){
-    function apply(t){
-      document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
-    }
-    var t = null;
-    try { t = localStorage.getItem("theme"); } catch(e) {}
-    if(!t){
-      try {
-        t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
-      } catch(e) { t = "dark"; }
-    }
-    apply(t);
-    window.addEventListener("storage", function(ev){
-      if(ev && ev.key === "theme") apply(ev.newValue);
-    });
-  })();
-</script>
     </head>
     <body>
         <div class="container">
